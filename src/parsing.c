@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* If we are on Windows, compile these functions */
 #ifdef _WIN32
-#include <string.h>
 
 /* Fake readline function */
 char* readline(char* prompt) {
