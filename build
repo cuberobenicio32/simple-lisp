@@ -1,3 +1,3 @@
 #! /usr/bin/bash
 
-cc -std=c99 -Wall src/parsing.c -ledit -o bin/prompt && bin/prompt
+cc -std=c99 -Wall src/parsing.c src/mpc.c -ledit -lm -o bin/parsing && bin/parsing

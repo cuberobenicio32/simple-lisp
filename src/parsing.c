@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include "mpc.h" 
 
 /* If we are on Windows, compile these functions */
 #ifdef _WIN32
@@ -28,6 +29,22 @@ void add_history(char* unused) {}
 static char input[2048];
 
 int main(int argc, char** argv) {
+  /* Create some parsers */
+  mpc_parser_t* Number   = mpc_new("number");
+  mpc_parser_t* Operator = mpc_new("operator");
+  mpc_parser_t* Expr     = mpc_new("expr");
+  mpc_parser_t* Slisp    = mpc_new("slisp");
+
+/* Define them with the following Language */
+mpca_lang(MPCA_LANG_DEFAULT,
+  "                                                     \
+    number   : /-?[0-9]+/ ;                             \
+    operator : '+' | '-' | '*' | '/' ;                  \
+    expr     : <number> | '(' <operator> <expr>+ ')' ;  \
+    slisp    : /^/ <operator> <expr>+ /$/ ;             \
+  ",
+  Number, Operator, Expr, Slisp);
+
 
   /* Define time variables */ 
   int day, month, year;
@@ -69,12 +86,23 @@ int main(int argc, char** argv) {
     /* Add input to history */
     add_history(input);
 
-    /* Echo input back to user */
-    printf("%s\n", input);
+    /* Attempt to parse user input */
+    mpc_result_t r;
+    if (mpc_parse("<stdin>", input, Slisp, &r)){
+      /* On success print the AST */
+      mpc_ast_print(r.output);
+      mpc_ast_delete(r.output);
+    } else {
+      /* Otherwise print the error */
+      mpc_err_print(r.error);
+      mpc_err_delete(r.error);
+    }
 
     /* Free retrieved input */
     free(input);
 
   }
+  /* Undefine and delete our parsers */
+  mpc_cleanup(4, Number, Operator, Expr, Slisp);
   return 0;
 }
